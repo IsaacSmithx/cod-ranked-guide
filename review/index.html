@@ -18,6 +18,8 @@ background:#0f1115;color:var(--text);font:inherit}
 .bar{position:sticky;bottom:0;background:var(--bg);padding:12px 0;border-top:1px solid var(--line)}
 .bar button{width:100%;padding:14px;border:0;border-radius:10px;background:var(--y);color:#1a1400;font:inherit;font-weight:700}
 .count{color:var(--muted);font-size:13px;text-align:center;margin-top:6px}
+#sheet{display:none;position:fixed;inset:0;background:#000c;z-index:9;padding:16px;overflow:auto}#sheet .in{max-width:600px;margin:40px auto;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px}
+#sheet textarea{font-size:14px}.big{flex:1;padding:14px;border:0;border-radius:10px;background:var(--y);color:#1a1400;font:inherit;font-weight:700}.big.gray{background:#2a2f38;color:var(--text)}#copied{color:var(--g);font-weight:600}
 </style></head><body><main>
 <h1>Clip review</h1>
 <p class="sub">Watch each clip. Tap <b>Use it</b> or <b>Don't use</b>, say if it's a good or bad example, pick the section, and add a label or notes if you want.
@@ -157,6 +159,8 @@ We already filled in our best guess, so just fix anything that's wrong. Your ans
 <label>Label / name<input class="lab" placeholder="e.g. ADS-walk into the doorway"></label>
 <label>Notes<textarea class="note" rows="2" placeholder="e.g. use this as the good example, start at 3 s"></textarea></label>
 </div>
+<div id="sheet"><div class="in"><b>Your answers</b><p>Tap <b>Copy</b>, then paste it in a message to Isaac (Discord or text).</p>
+<textarea id="out" rows="12" readonly></textarea><div class="row"><button id="copy" class="big">Copy</button><button id="close" class="big gray">Close</button></div><p id="copied"></p></div></div>
 <div class="bar"><button id="send">Send my answers</button><div class="count" id="count"></div></div>
 </main><script>
 const KEY='clipreview2';let saved={};try{saved=JSON.parse(localStorage.getItem(KEY)||'{}')}catch(e){}
@@ -178,6 +182,10 @@ document.getElementById('send').onclick=async()=>{
   lines.push('Clip '+(i+1)+' ('+c.dataset.id+'): '+a.use+(a.use==='Use'?' | '+(a.kind||'?')+' example | '+(a.sec||'no section'):'')+(a.lab?' | label: '+a.lab:'')+(a.note?' | notes: '+a.note:''))});
  if(lines.length===1){alert('Tap Use it or Don\'t use on at least one clip first.');return}
  const text=lines.join('\n');
- try{if(navigator.share){await navigator.share({text});return}}catch(e){if(e.name==='AbortError')return}
- try{await navigator.clipboard.writeText(text);alert('Copied. Paste it in a message to Isaac.')}catch(e){prompt('Copy this and send it to Isaac:',text)}};
+ const box=document.getElementById('out');box.value=text;document.getElementById('sheet').style.display='block';
+ box.focus();box.select();box.setSelectionRange(0,text.length);};
+document.getElementById('copy').onclick=async()=>{const box=document.getElementById('out');box.focus();box.select();box.setSelectionRange(0,box.value.length);
+ let ok=false;try{await navigator.clipboard.writeText(box.value);ok=true}catch(e){try{ok=document.execCommand('copy')}catch(e2){}}
+ document.getElementById('copied').textContent=ok?'Copied! Now paste it in a message to Isaac.':'Press and hold in the box, tap Select All, then Copy.'};
+document.getElementById('close').onclick=()=>{document.getElementById('sheet').style.display='none'};
 </script></body></html>
